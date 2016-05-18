@@ -1,5 +1,8 @@
 #include "stdafx.h"
+#include "MiceUiKey.h"
 #include "file.h"
+
+extern CMiceUiKeyApp theApp;
 
 int CheckIfFileExists (LPCTSTR szFileName)
 {
@@ -44,7 +47,7 @@ char* GetFileOpenName(char * szFilter)
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
 	
-	//ofn.lpstrInitialDir = theApp.szFilePathName;
+	ofn.lpstrInitialDir = theApp.szFilePathName;
 	
 	ofn.lpstrTitle = "Open File";
 	ofn.Flags = OFN_FILEMUSTEXIST;
@@ -78,7 +81,7 @@ char* GetFileSaveName(char * szFilter)
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrDefExt = "ini";	
-	//ofn.lpstrInitialDir = theApp.szFilePathName;
+	ofn.lpstrInitialDir = theApp.szFilePathName;
 	
 	ofn.lpstrTitle = "Save File";
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
