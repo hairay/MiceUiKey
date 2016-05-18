@@ -9,6 +9,8 @@
 #include "usb_io.h"
 #include "threads.h"
 #include "bios.h"
+#include "debug.h"
+#include "file.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -55,6 +57,8 @@ HANDLE m_hUSB;
 HANDLE m_hDbgIn;
 HANDLE m_hDbgOut;
 static TsThread sReadButtonID = INVALIDTHREAD;
+static TsThread sSaveButtonID = INVALIDTHREAD;
+static TsThread sPlayButtonID = INVALIDTHREAD;
 BOOL gGetDeviceHandle = FALSE;
 static TsMailbox sButtonMailBox;
 
@@ -70,10 +74,12 @@ static Sint32 ReadButtonThread(void *parm)
 		ret = GetEvent((LPBYTE)data, sizeof(data));
 		if(ret == TRUE)
 		{
-			eventData.msg1 = data[0];
-			eventData.msg2 = data[1];
+			eventData.msg1 = 2;
+			eventData.msg2 = data[0];
+			eventData.msg3 = data[1];
+			eventData.msg4.ullval = GetTickCount();
 			retApi = TSmsgSend(sButtonMailBox, &eventData);
-			BIOSlog("TSmsgSend ret = %d data=%x %x\n", retApi, data[0], data[1]);
+			BIOSlog("TSmsgSend ret = %d data=%x %x time=%u\n", retApi, data[0], data[1],eventData.msg4.ullval);
 		}
 		else
 		{
@@ -81,6 +87,127 @@ static Sint32 ReadButtonThread(void *parm)
 			BIOSlog("GetEvent ret = %u\n", ret);
 		}
 	}
+}
+
+static Sint32 SaveButtonThread(void *parm)
+{
+	Msg eventData; 
+	HANDLE hFile = INVALID_HANDLE_VALUE;
+	int	retApi;
+	CString	t;// = CTime::GetCurrentTime().Format("%Y%m%d-%H%M%S");
+	char	*pszDateTime; //=t.GetBuffer(0);
+	char    szTemp[MAX_PATH];
+
+	while (1)
+	{
+		retApi = TSmsgTimeout(sButtonMailBox, &eventData, 10, 0);
+		if(retApi == 0)
+		{
+			if(eventData.msg1 == 1) //start record key
+			{
+				t = CTime::GetCurrentTime().Format("%Y%m%d-%H%M%S");
+				pszDateTime = t.GetBuffer(0);
+				sprintf(szTemp, "%s%s.txt", theApp.szFilePathName,pszDateTime);
+				hFile = StartSaveFile(szTemp);
+				sprintf(szTemp, "1 0 0 %lu\r", eventData.msg4.ullval);
+				SaveLineToFile(hFile, szTemp, strlen(szTemp));
+			}
+			else if(eventData.msg1 == 0) //stop record key
+			{
+				sprintf(szTemp, "0 0 0 %lu\r", eventData.msg4.ullval);
+				SaveLineToFile(hFile, szTemp, strlen(szTemp));	
+				StopSaveFile(hFile);
+			}
+			else if(hFile != INVALID_HANDLE_VALUE)//save key
+			{
+				sprintf(szTemp, "%d %d %d %lu\r", eventData.msg1, eventData.msg2, eventData.msg3,eventData.msg4.ullval);
+				SaveLineToFile(hFile, szTemp, strlen(szTemp));	
+			}			
+		}
+		else
+		{
+			BIOSlog("TSmsgTimeout ret = %u\n", retApi);
+		}
+	}
+}
+
+DWORD GetMsTimeFromStart(DWORD curTime, DWORD startTime)
+{	
+	if(curTime >= startTime)
+		return (curTime - startTime);	
+	else	
+		return ( 0xFFFFFFFF - startTime + curTime + 1);					
+}
+
+
+static Sint32 PlayButtonThread(void *parm)
+{
+	int	retApi = 0;
+	char *pFileName = (char *)parm;
+
+	HANDLE	hFile = INVALID_HANDLE_VALUE; 
+	DWORD	dwFileSize, rDWORD, lastTime, time;
+	char	*fileArea =NULL;
+	BOOL	retBool, ret = TRUE;	
+	char	seps[]   = " \r\n";
+	char	*token;		
+	DWORD	tokenNum = 0, data[8];
+
+	hFile = CreateFile(pFileName,           // open MYFILE.TXT 
+					GENERIC_READ,              // open for reading 
+					FILE_SHARE_READ,           // share for reading 
+					NULL,                      // no security 
+					OPEN_EXISTING,             // existing file only 
+					FILE_ATTRIBUTE_NORMAL,     // normal file 
+					NULL);                     // no attr. template 
+ 
+	if (hFile == INVALID_HANDLE_VALUE) 
+	{	
+		goto RETURN;
+	}
+
+	dwFileSize = GetFileSize (hFile, NULL) ; 
+	fileArea = new char[dwFileSize+128];
+	fileArea[dwFileSize] = 0;
+	retBool = ReadFile( hFile, fileArea, dwFileSize, &rDWORD, NULL );
+	CloseHandle(hFile);
+	if(retBool == FALSE || dwFileSize != rDWORD)
+	{		
+		goto RETURN;
+	}
+	
+	token = strtok( fileArea, seps );
+	while( token != NULL )
+	{				
+		data[tokenNum] = atoi(token);
+		tokenNum ++;		
+		if(tokenNum == 4)
+		{
+			if(data[0] == 2 && ret == TRUE) //key data
+			{
+				time = GetMsTimeFromStart(data[3], lastTime);
+				Sleep(time);
+				ret = send_cmd_data(m_hDbgIn,m_hDbgOut,(char *)&data[1],8,SCSI_SDTC_BUTTON,2, FALSE);  				
+			}
+			else if(data[0] == 0 && ret == TRUE)//stop
+			{
+				time = GetMsTimeFromStart(data[3], lastTime);
+				Sleep(time);
+			}
+
+			lastTime = data[3];	
+			tokenNum = 0;
+		}
+		/* Get next token: */
+		token = strtok( NULL, seps );
+	}
+
+
+RETURN:	
+	if(fileArea != NULL)
+		delete(fileArea);
+
+	return retApi;
 }
 
 BOOL CMiceUiKeyDlg::ReOpenDevice()
@@ -159,6 +286,7 @@ BEGIN_MESSAGE_MAP(CMiceUiKeyDlg, CDialog)
 	ON_BN_CLICKED(IDCANCEL, &CMiceUiKeyDlg::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_START, &CMiceUiKeyDlg::OnBnClickedStart)
 	ON_BN_CLICKED(IDC_STOP, &CMiceUiKeyDlg::OnBnClickedStop)
+	ON_BN_CLICKED(IDC_PLAY, &CMiceUiKeyDlg::OnBnClickedPlay)
 END_MESSAGE_MAP()
 
 
@@ -195,6 +323,7 @@ BOOL CMiceUiKeyDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	ReOpenDevice();
+	sButtonMailBox = TScreateMsgQueue();
 	sReadButtonID = TScreateThread(
                             ReadButtonThread,
                             IDLE_STACK_SIZE,
@@ -203,7 +332,14 @@ BOOL CMiceUiKeyDlg::OnInitDialog()
                             "readButtonThread"
                             );
 
-	sButtonMailBox = TScreateMsgQueue();
+	sSaveButtonID = TScreateThread(
+                            SaveButtonThread,
+                            IDLE_STACK_SIZE,
+                            IDLE_TASK_PRIORITY,
+                            NULL,
+                            "saveButtonThread"
+                            );
+	
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -266,6 +402,12 @@ void CMiceUiKeyDlg::OnDestroy()
 	if (sReadButtonID != INVALIDTHREAD)
 		TSdestroyThread(sReadButtonID);
 
+	if(sSaveButtonID != INVALIDTHREAD)
+		TSdestroyThread(sReadButtonID);
+
+	if(sPlayButtonID != INVALIDTHREAD)
+		TSdestroyThread(sPlayButtonID);	
+	
 	if(sButtonMailBox != NULL)
 		TSdestroyMsgQueue(sButtonMailBox);
 
@@ -288,22 +430,42 @@ void CMiceUiKeyDlg::OnBnClickedStart()
 {
 	// TODO: Add your control notification handler code here
 	int ret;
-	Uint32 data[2];
 
-	data[0] = 2;
-	data[1] = 0;
-	//ret = send_cmd_data(m_hDbgIn,m_hDbgOut,(char *)data,sizeof(data),SCSI_SDTC_BUTTON,2, FALSE);  
+	Msg eventData={0}; 
+
+	eventData.msg1 = 1;
+	eventData.msg4.ullval = GetTickCount();	
 	ret = send_cmd_data(m_hDbgIn,m_hDbgOut,NULL,0,SCSI_SDTC_BUTTON,1, FALSE);  
+	TSmsgSend(sButtonMailBox, &eventData);
 }
 
 void CMiceUiKeyDlg::OnBnClickedStop()
 {
 	// TODO: Add your control notification handler code here
 	int ret;
-	Uint32 data[2];
-
-	data[0] = 3;
-	data[1] = 0;
-	//ret = send_cmd_data(m_hDbgIn,m_hDbgOut,(char *)data,sizeof(data),SCSI_SDTC_BUTTON,2, FALSE);  
+	Msg eventData={0}; 
+	
+	eventData.msg1 = 0;
+	eventData.msg4.ullval = GetTickCount();
+	
 	ret = send_cmd_data(m_hDbgIn,m_hDbgOut,NULL,0,SCSI_SDTC_BUTTON,0, FALSE);  
+	TSmsgSend(sButtonMailBox, &eventData);
+}
+
+void CMiceUiKeyDlg::OnBnClickedPlay()
+{
+	// TODO: Add your control notification handler code here
+	char *pFileName;
+
+	if(sPlayButtonID != INVALIDTHREAD)
+		TSdestroyThread(sPlayButtonID);
+
+	pFileName = GetFileOpenName("*.txt");
+	sPlayButtonID = TScreateThread(
+                            PlayButtonThread,
+                            IDLE_STACK_SIZE,
+                            IDLE_TASK_PRIORITY,
+                            (void *)pFileName,
+                            "playButtonThread"
+                            );	
 }

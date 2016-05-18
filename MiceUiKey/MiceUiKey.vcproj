@@ -192,6 +192,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\debug.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\file.cpp"
 				>
 			</File>
