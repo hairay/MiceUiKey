@@ -53,14 +53,16 @@ END_MESSAGE_MAP()
 #define IDLE_TASK_PRIORITY TS_LOWEST_PRIORITY
 #define IDLE_STACK_SIZE TSSMALL_STACK
 
-HANDLE m_hUSB;
-HANDLE m_hDbgIn;
-HANDLE m_hDbgOut;
+static HANDLE m_hUSB;
+static HANDLE m_hDbgIn;
+static HANDLE m_hDbgOut;
+static HWND sDlgWnd; 
 static TsThread sReadButtonID = INVALIDTHREAD;
 static TsThread sSaveButtonID = INVALIDTHREAD;
 static TsThread sPlayButtonID = INVALIDTHREAD;
-BOOL gGetDeviceHandle = FALSE;
+static BOOL gGetDeviceHandle = FALSE;
 static TsMailbox sButtonMailBox;
+static Uint32 sLoopCount;
 
 static Sint32 ReadButtonThread(void *parm)
 {
@@ -146,10 +148,12 @@ static Sint32 PlayButtonThread(void *parm)
 	char *pFileName = (char *)parm;
 
 	HANDLE	hFile = INVALID_HANDLE_VALUE; 
-	DWORD	dwFileSize, rDWORD, lastTime, time;
+	DWORD	dwFileSize, rDWORD, lastTime, time, loop =0;
 	char	*fileArea =NULL;
+	char	*fileData =NULL;
 	BOOL	retBool, ret = TRUE;	
 	char	seps[]   = " \r\n";
+	char    temp[128];
 	char	*token;		
 	DWORD	tokenNum = 0, data[8];
 
@@ -168,6 +172,7 @@ static Sint32 PlayButtonThread(void *parm)
 
 	dwFileSize = GetFileSize (hFile, NULL) ; 
 	fileArea = new char[dwFileSize+128];
+	fileData = new char[dwFileSize+128];
 	fileArea[dwFileSize] = 0;
 	retBool = ReadFile( hFile, fileArea, dwFileSize, &rDWORD, NULL );
 	CloseHandle(hFile);
@@ -175,38 +180,52 @@ static Sint32 PlayButtonThread(void *parm)
 	{		
 		goto RETURN;
 	}
-	
-	token = strtok( fileArea, seps );
-	while( token != NULL )
-	{				
-		data[tokenNum] = atoi(token);
-		tokenNum ++;		
-		if(tokenNum == 4)
-		{
-			if(data[0] == 2 && ret == TRUE) //key data
-			{
-				time = GetMsTimeFromStart(data[3], lastTime);
-				Sleep(time);
-				ret = send_cmd_data(m_hDbgIn,m_hDbgOut,(char *)&data[1],8,SCSI_SDTC_BUTTON,2, FALSE);  				
-			}
-			else if(data[0] == 0 && ret == TRUE)//stop
-			{
-				time = GetMsTimeFromStart(data[3], lastTime);
-				Sleep(time);
-			}
 
-			lastTime = data[3];	
-			tokenNum = 0;
+	while(sLoopCount)
+	{
+		loop ++;
+		sprintf(temp, "Loop:%u", loop);
+		SetDlgItemText(sDlgWnd, IDC_LOOP_TEXT, temp);
+
+		memcpy(fileData, fileArea, (dwFileSize+7)/4*4);
+		token = strtok( fileData, seps );
+		while( token != NULL )
+		{				
+			data[tokenNum] = atoi(token);
+			tokenNum ++;		
+			if(tokenNum == 4)
+			{
+				if(data[0] == 2 && ret == TRUE) //key data
+				{
+					time = GetMsTimeFromStart(data[3], lastTime);
+					Sleep(time);
+					ret = send_cmd_data(m_hDbgIn,m_hDbgOut,(char *)&data[1],8,SCSI_SDTC_BUTTON,2, FALSE);  				
+				}
+				else if(data[0] == 0 && ret == TRUE)//stop
+				{
+					time = GetMsTimeFromStart(data[3], lastTime);
+					Sleep(time);
+				}
+
+				lastTime = data[3];	
+				tokenNum = 0;
+			}
+			/* Get next token: */
+			token = strtok( NULL, seps );
 		}
-		/* Get next token: */
-		token = strtok( NULL, seps );
-	}
-
-
+		sLoopCount --;
+	}	
+	
 RETURN:	
 	if(fileArea != NULL)
 		delete(fileArea);
-
+	if(fileData != NULL)
+		delete(fileData);
+	
+	SetDlgItemText(sDlgWnd, IDC_LOOP_TEXT, "Loop Count");
+	EnableWindow(GetDlgItem(sDlgWnd, IDC_START), TRUE);
+	EnableWindow(GetDlgItem(sDlgWnd, IDC_STOP), TRUE);	
+	EnableWindow(GetDlgItem(sDlgWnd, IDC_PLAY), TRUE);	
 	return retApi;
 }
 
@@ -268,6 +287,7 @@ BOOL CMiceUiKeyDlg::ReOpenDevice()
 
 CMiceUiKeyDlg::CMiceUiKeyDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CMiceUiKeyDlg::IDD, pParent)
+	, m_loop_count(_T("1"))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -275,6 +295,7 @@ CMiceUiKeyDlg::CMiceUiKeyDlg(CWnd* pParent /*=NULL*/)
 void CMiceUiKeyDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_LOOP_COUNT, m_loop_count);
 }
 
 BEGIN_MESSAGE_MAP(CMiceUiKeyDlg, CDialog)
@@ -286,7 +307,7 @@ BEGIN_MESSAGE_MAP(CMiceUiKeyDlg, CDialog)
 	ON_BN_CLICKED(IDCANCEL, &CMiceUiKeyDlg::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_START, &CMiceUiKeyDlg::OnBnClickedStart)
 	ON_BN_CLICKED(IDC_STOP, &CMiceUiKeyDlg::OnBnClickedStop)
-	ON_BN_CLICKED(IDC_PLAY, &CMiceUiKeyDlg::OnBnClickedPlay)
+	ON_BN_CLICKED(IDC_PLAY, &CMiceUiKeyDlg::OnBnClickedPlay)	
 END_MESSAGE_MAP()
 
 
@@ -323,6 +344,7 @@ BOOL CMiceUiKeyDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	ReOpenDevice();
+	GetDlgItem(IDC_STOP)->EnableWindow(FALSE);
 	sButtonMailBox = TScreateMsgQueue();
 	sReadButtonID = TScreateThread(
                             ReadButtonThread,
@@ -433,6 +455,10 @@ void CMiceUiKeyDlg::OnBnClickedStart()
 
 	Msg eventData={0}; 
 
+	GetDlgItem(IDC_PLAY)->EnableWindow(FALSE);
+	GetDlgItem(IDC_START)->EnableWindow(FALSE);
+	GetDlgItem(IDC_STOP)->EnableWindow(TRUE);
+
 	eventData.msg1 = 1;
 	eventData.msg4.ullval = GetTickCount();	
 	ret = send_cmd_data(m_hDbgIn,m_hDbgOut,NULL,0,SCSI_SDTC_BUTTON,1, FALSE);  
@@ -450,6 +476,9 @@ void CMiceUiKeyDlg::OnBnClickedStop()
 	
 	ret = send_cmd_data(m_hDbgIn,m_hDbgOut,NULL,0,SCSI_SDTC_BUTTON,0, FALSE);  
 	TSmsgSend(sButtonMailBox, &eventData);
+	GetDlgItem(IDC_PLAY)->EnableWindow(TRUE);
+	GetDlgItem(IDC_START)->EnableWindow(TRUE);
+	GetDlgItem(IDC_STOP)->EnableWindow(FALSE);
 }
 
 void CMiceUiKeyDlg::OnBnClickedPlay()
@@ -459,13 +488,24 @@ void CMiceUiKeyDlg::OnBnClickedPlay()
 
 	if(sPlayButtonID != INVALIDTHREAD)
 		TSdestroyThread(sPlayButtonID);
-
+	UpdateData(TRUE);
+	sLoopCount = atoi((LPCTSTR)m_loop_count);
+	sDlgWnd = m_hWnd;
 	pFileName = GetFileOpenName("*.txt");
-	sPlayButtonID = TScreateThread(
-                            PlayButtonThread,
-                            IDLE_STACK_SIZE,
-                            IDLE_TASK_PRIORITY,
-                            (void *)pFileName,
-                            "playButtonThread"
-                            );	
+
+	if(pFileName != NULL)
+	{
+		SetDlgItemText(IDC_LOOP_TEXT, "Start");
+		GetDlgItem(IDC_START)->EnableWindow(FALSE);
+		GetDlgItem(IDC_STOP)->EnableWindow(FALSE);
+		GetDlgItem(IDC_PLAY)->EnableWindow(FALSE);
+		sPlayButtonID = TScreateThread(
+								PlayButtonThread,
+								IDLE_STACK_SIZE,
+								IDLE_TASK_PRIORITY,
+								(void *)pFileName,
+								"playButtonThread"
+								);			
+	}
 }
+

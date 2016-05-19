@@ -36,5 +36,6 @@ public:
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnBnClickedStart();
 	afx_msg void OnBnClickedStop();
-	afx_msg void OnBnClickedPlay();
+	afx_msg void OnBnClickedPlay();	
+	CString m_loop_count;
 };
