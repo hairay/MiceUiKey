@@ -111,18 +111,18 @@ static Sint32 SaveButtonThread(void *parm)
 				pszDateTime = t.GetBuffer(0);
 				sprintf(szTemp, "%s%s.txt", theApp.szFilePathName,pszDateTime);
 				hFile = StartSaveFile(szTemp);
-				sprintf(szTemp, "1 0 0 %lu\r", (Uint32)eventData.msg4.ullval);
+				sprintf(szTemp, "1 0 0 %lu\r", eventData.msg4.ullval);
 				SaveLineToFile(hFile, szTemp, strlen(szTemp));
 			}
 			else if(eventData.msg1 == 0) //stop record key
 			{
-				sprintf(szTemp, "0 0 0 %lu\r", (Uint32)eventData.msg4.ullval);
+				sprintf(szTemp, "0 0 0 %lu\r", eventData.msg4.ullval);
 				SaveLineToFile(hFile, szTemp, strlen(szTemp));	
 				StopSaveFile(hFile);
 			}
 			else if(hFile != INVALID_HANDLE_VALUE)//save key
 			{
-				sprintf(szTemp, "%d %d %d %lu\r", eventData.msg1, eventData.msg2, eventData.msg3, (Uint32)eventData.msg4.ullval);
+				sprintf(szTemp, "%d %d %d %lu\r", eventData.msg1, eventData.msg2, eventData.msg3,eventData.msg4.ullval);
 				SaveLineToFile(hFile, szTemp, strlen(szTemp));	
 			}			
 		}
@@ -181,6 +181,7 @@ static Sint32 PlayButtonThread(void *parm)
 		goto RETURN;
 	}
 
+	SetDlgItemText(sDlgWnd, IDC_STATUS, "START");	
 	while(sLoopCount)
 	{
 		loop ++;
@@ -206,7 +207,12 @@ static Sint32 PlayButtonThread(void *parm)
 					time = GetMsTimeFromStart(data[3], lastTime);
 					Sleep(time);
 				}
-
+				if(ret != TRUE)
+				{
+					sprintf(temp, "USB I/O FAIL :Loop:%u", loop);
+					SetDlgItemText(sDlgWnd, IDC_STATUS, temp);	
+					goto RETURN;
+				}
 				lastTime = data[3];	
 				tokenNum = 0;
 			}
@@ -215,7 +221,8 @@ static Sint32 PlayButtonThread(void *parm)
 		}
 		sLoopCount --;
 	}	
-	
+	SetDlgItemText(sDlgWnd, IDC_STATUS, "END");	
+
 RETURN:	
 	if(fileArea != NULL)
 		delete(fileArea);
@@ -345,6 +352,11 @@ BOOL CMiceUiKeyDlg::OnInitDialog()
 	// TODO: Add extra initialization here
 	ReOpenDevice();
 	GetDlgItem(IDC_STOP)->EnableWindow(FALSE);
+	if(m_hUSB == NULL)
+	{
+		GetDlgItem(IDC_PLAY)->EnableWindow(FALSE);
+		GetDlgItem(IDC_START)->EnableWindow(FALSE);
+	}
 	sButtonMailBox = TScreateMsgQueue();
 	sReadButtonID = TScreateThread(
                             ReadButtonThread,
