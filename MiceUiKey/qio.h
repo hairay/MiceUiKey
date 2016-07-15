@@ -1,7 +1,7 @@
 //*****************************************************************************
 // Copyright (C) 2014 Cambridge Silicon Radio Ltd.
-// $Header: /cvs/MICECore/Include/common/qio.h,v 1.2 2015/12/24 07:57:44 AV01854 Exp $
-// $Change: 244499 $ $Date: 2015/12/24 07:57:44 $
+// $Header: /mfp/MiceUiKey/MiceUiKey/qio.h,v 1.1 2016/05/30 03:48:52 AV00287 Exp $
+// $Change: 244499 $ $Date: 2016/05/30 03:48:52 $
 //
 /// @file
 /// Stream I/O.

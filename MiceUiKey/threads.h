@@ -1,7 +1,7 @@
 //*****************************************************************************
 // Copyright (C) 2013 Cambridge Silicon Radio Ltd.
-// $Header: /cvs/MICECore/Include/threadx/threads.h,v 1.2 2015/08/12 01:09:12 AV00287 Exp $
-// $Change: 245218 $ $Date: 2015/08/12 01:09:12 $
+// $Header: /mfp/MiceUiKey/MiceUiKey/threads.h,v 1.1 2016/05/30 03:48:52 AV00287 Exp $
+// $Change: 245218 $ $Date: 2016/05/30 03:48:52 $
 //
 /// @file
 /// Thread and thread primitives Interface

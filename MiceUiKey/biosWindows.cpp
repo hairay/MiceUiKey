@@ -1,7 +1,7 @@
 //*****************************************************************************
 //  Copyright (C) 2012 Cambridge Silicon Radio Ltd.
-//  $Header: //depot/imgeng/sw/inferno_2015.1Candidate/appsrc/bios/biosWindows_NT/biosWindows.c#1 $
-//  $Change: 251312 $ $Date: 2015/05/01 $
+//  $Header: /mfp/MiceUiKey/MiceUiKey/biosWindows.cpp,v 1.1 2016/05/30 03:48:51 AV00287 Exp $
+//  $Change: 251312 $ $Date: 2016/05/30 03:48:51 $
 //  
 /// @file
 /// BIOS support for Windows builds (host based)

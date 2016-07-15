@@ -1,7 +1,7 @@
 //*****************************************************************************
 //  Copyright (C) 2013 Cambridge Silicon Radio Ltd.
-//  $Header: /cvs/MICECore/threads/tsWindows_NT/threadport.h,v 1.1 2015/05/04 01:21:51 AV00287 Exp $
-//  $Change: 245416 $ $Date: 2015/05/04 01:21:51 $
+//  $Header: /mfp/MiceUiKey/MiceUiKey/threadport.h,v 1.1 2016/05/30 03:48:52 AV00287 Exp $
+//  $Change: 245416 $ $Date: 2016/05/30 03:48:52 $
 //  
 /// @file
 /// port specific code for Windows_NT threading API

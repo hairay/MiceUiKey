@@ -1,7 +1,7 @@
 //*****************************************************************************
 //  Copyright (C) 2013 Cambridge Silicon Radio Ltd.
-//  $Header: //depot/imgeng/sw/inferno_2015.1Candidate/appsrc/incl/bios.h#1 $
-//  $Change: 251312 $ $Date: 2015/05/01 $
+//  $Header: /mfp/MiceUiKey/MiceUiKey/bios.h,v 1.1 2016/05/30 03:48:51 AV00287 Exp $
+//  $Change: 251312 $ $Date: 2016/05/30 03:48:51 $
 //
 /// @file
 /// Basic Input Output Sytem.
