@@ -20,6 +20,7 @@ class CMiceUiKeyApp : public CWinAppEx
 public:
     char szFilePathName[2048];
 	char szIniFileName[2048];
+	char szSysFileName[2048];
 	char	gName[32];
 	char	gName2[32];
 	char	gPrintName[128];
@@ -27,6 +28,11 @@ public:
 	DWORD	gPreFileNum;
 	WORD	gVid, gPid;
 
+	HANDLE m_hUSB;
+	HANDLE m_hDbgIn;
+	HANDLE m_hDbgOut;
+
+	BOOL ReOpenDevice();
 public:
 	CMiceUiKeyApp();
 
