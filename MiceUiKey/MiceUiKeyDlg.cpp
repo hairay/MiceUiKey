@@ -225,9 +225,9 @@ static Sint32 PlayButtonThread(void *parm)
 
 RETURN:	
 	if(fileArea != NULL)
-		delete(fileArea);
+		delete(fileArea[]);
 	if(fileData != NULL)
-		delete(fileData);
+		delete(fileData[]);
 	
 	SetDlgItemText(sDlgWnd, IDC_LOOP_TEXT, "Loop Count");
 	EnableWindow(GetDlgItem(sDlgWnd, IDC_START), TRUE);
