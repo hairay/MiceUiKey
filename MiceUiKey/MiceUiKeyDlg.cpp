@@ -111,18 +111,18 @@ static Sint32 SaveButtonThread(void *parm)
 				pszDateTime = t.GetBuffer(0);
 				sprintf(szTemp, "%s%s.txt", theApp.szFilePathName,pszDateTime);
 				hFile = StartSaveFile(szTemp);
-				sprintf(szTemp, "1 0 0 %lu\r", eventData.msg4.ullval);
+				sprintf(szTemp, "1 0 0 %u\r", (Uint32)eventData.msg4.ullval);
 				SaveLineToFile(hFile, szTemp, strlen(szTemp));
 			}
 			else if(eventData.msg1 == 0) //stop record key
 			{
-				sprintf(szTemp, "0 0 0 %lu\r", eventData.msg4.ullval);
+				sprintf(szTemp, "0 0 0 %u\r", (Uint32)eventData.msg4.ullval);
 				SaveLineToFile(hFile, szTemp, strlen(szTemp));	
 				StopSaveFile(hFile);
 			}
 			else if(hFile != INVALID_HANDLE_VALUE)//save key
 			{
-				sprintf(szTemp, "%d %d %d %lu\r", eventData.msg1, eventData.msg2, eventData.msg3,eventData.msg4.ullval);
+				sprintf(szTemp, "%d %d %d %u\r", eventData.msg1, eventData.msg2, eventData.msg3, (Uint32)eventData.msg4.ullval);
 				SaveLineToFile(hFile, szTemp, strlen(szTemp));	
 			}			
 		}
@@ -225,9 +225,9 @@ static Sint32 PlayButtonThread(void *parm)
 
 RETURN:	
 	if(fileArea != NULL)
-		delete(fileArea[]);
+		delete(fileArea);
 	if(fileData != NULL)
-		delete(fileData[]);
+		delete(fileData);
 	
 	SetDlgItemText(sDlgWnd, IDC_LOOP_TEXT, "Loop Count");
 	EnableWindow(GetDlgItem(sDlgWnd, IDC_START), TRUE);
