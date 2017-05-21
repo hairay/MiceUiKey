@@ -16,6 +16,56 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// Chinese (Taiwan) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHT)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL
+#pragma code_page(950)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SET_LINE_DIALOG DIALOGEX 0, 0, 362, 274
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Input Output"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,253,253,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,305,253,50,14
+    LISTBOX         IDC_INPUT_LIST,7,36,162,208,LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_OUTPUT_LIST,200,36,155,208,LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Input Settings",IDC_STATIC,12,18,133,12
+    LTEXT           "Output Settings",IDC_STATIC,208,19,133,12
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_SET_LINE_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 355
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 267
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Chinese (Taiwan) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
@@ -23,6 +73,77 @@
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 #endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 170, 62
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About MiceUiKey"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,21,20
+    LTEXT           "MiceUiKey, Version 1.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2016",IDC_STATIC,42,26,114,8
+    DEFPUSHBUTTON   "OK",IDOK,113,41,50,14,WS_GROUP
+END
+
+IDD_MICEUIKEY_DIALOG DIALOGEX 0, 0, 738, 365
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "MiceUiKey"
+MENU IDR_MENU1
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Start Record",IDC_START,394,344,50,14
+    PUSHBUTTON      "Stop Record",IDC_STOP,452,344,50,14
+    PUSHBUTTON      "Play",IDC_PLAY,510,344,50,14
+    EDITTEXT        IDC_LOOP_COUNT,313,341,50,17,ES_AUTOHSCROLL
+    LTEXT           "Loop Count",IDC_LOOP_TEXT,259,343,49,8
+    LTEXT           "",IDC_STATUS,7,345,249,13,0,WS_EX_STATICEDGE
+    CONTROL         "",IDC_CHARTCTRL,"ChartCtrl",WS_CLIPCHILDREN | WS_TABSTOP,7,7,720,306
+    PUSHBUTTON      "Open",IDC_OPEN,566,344,50,14
+    LTEXT           "0",IDC_TIME1,9,319,53,13,0,WS_EX_STATICEDGE
+    LTEXT           "us",IDC_STATIC,66,322,18,8
+    LTEXT           "0",IDC_TIME2,86,320,53,13,0,WS_EX_STATICEDGE
+    LTEXT           "us",IDC_STATIC,143,323,18,8
+    PUSHBUTTON      "Save",IDC_SAVE,674,344,50,14
+    LTEXT           "",IDC_FILE_NAME,159,322,342,13,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Settings",IDC_SETTING,620,344,50,14
+    LTEXT           "0",IDC_MAX_POINTS,507,321,78,13,0,WS_EX_STATICEDGE
+    EDITTEXT        IDC_POINT_NUM,592,321,50,14,ES_AUTOHSCROLL | ES_NUMBER
+    PUSHBUTTON      "Goto",IDC_GOTO,649,321,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 163
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 55
+    END
+
+    IDD_MICEUIKEY_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 724
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 358
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -74,37 +195,6 @@ IDR_MAINFRAME           ICON                    "res\\MiceUiKey.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Dialog
-//
-
-IDD_ABOUTBOX DIALOGEX 0, 0, 170, 62
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About MiceUiKey"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,21,20
-    LTEXT           "MiceUiKey, Version 1.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2016",IDC_STATIC,42,26,114,8
-    DEFPUSHBUTTON   "OK",IDOK,113,41,50,14,WS_GROUP
-END
-
-IDD_MICEUIKEY_DIALOG DIALOGEX 0, 0, 215, 187
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
-EXSTYLE WS_EX_APPWINDOW
-CAPTION "MiceUiKey"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    PUSHBUTTON      "Start Record",IDC_START,22,141,50,14
-    PUSHBUTTON      "Stop Record",IDC_STOP,79,140,50,14
-    PUSHBUTTON      "Play",IDC_PLAY,145,141,50,14
-    EDITTEXT        IDC_LOOP_COUNT,144,119,50,17,ES_AUTOHSCROLL
-    LTEXT           "Loop Count",IDC_LOOP_TEXT,150,105,49,8
-    LTEXT           "Static",IDC_STATUS,7,159,187,13
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Version
 //
 
@@ -125,14 +215,14 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "TODO: <Company name>"
-            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "CompanyName", "Avision"
+            VALUE "FileDescription", "Event Recoder"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "MiceUiKey.exe"
-            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "LegalCopyright", "<Avision>.  All rights reserved."
             VALUE "OriginalFilename", "MiceUiKey.exe"
-            VALUE "ProductName", "TODO: <Product name>"
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "ProductName", "MiceUiKey"
+            VALUE "ProductVersion", "1.0.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -144,29 +234,38 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// DESIGNINFO
+// Menu
 //
 
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+IDR_MENU1 MENU 
 BEGIN
-    IDD_ABOUTBOX, DIALOG
+    POPUP "Line(0-9)"
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 163
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 55
+        MENUITEM "0",                           ID_LINE_0
+        MENUITEM "1",                           ID_LINE_1
+        MENUITEM "2",                           ID_LINE_2
+        MENUITEM "3",                           ID_LINE_3
+        MENUITEM "4",                           ID_LINE_4
+        MENUITEM "5",                           ID_LINE_5
+        MENUITEM "6",                           ID_LINE_6
+        MENUITEM "7",                           ID_LINE_7
+        MENUITEM "8",                           ID_LINE_8
+        MENUITEM "9",                           ID_LINE_9
     END
-
-    IDD_MICEUIKEY_DIALOG, DIALOG
+    POPUP "Line(10-19)"
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 208
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 180
+        MENUITEM "10",                          ID_LINE_10
+        MENUITEM "11",                          ID_LINE_11
+        MENUITEM "12",                          ID_LINE_12
+        MENUITEM "13",                          ID_LINE_13
+        MENUITEM "14",                          ID_LINE_14
+        MENUITEM "15",                          ID_LINE_15
+        MENUITEM "16",                          ID_LINE_16
+        MENUITEM "17",                          ID_LINE_17
+        MENUITEM "18",                          ID_LINE_18
+        MENUITEM "19",                          ID_LINE_19
     END
 END
-#endif    // APSTUDIO_INVOKED
 
 
 /////////////////////////////////////////////////////////////////////////////

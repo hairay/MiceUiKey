@@ -711,7 +711,7 @@ int read_cmd_data(HANDLE f_usb_in,HANDLE f_usb_out,char *buf,unsigned int size, 
 int send_cmd_data(HANDLE f_usb_in,HANDLE f_usb_out,char *buf,unsigned int size, unsigned char SendCmd, unsigned char type,BOOL bPrinter);
 DWORD GetPipeConfiguration(HANDLE f_usb, LPBYTE lpbuf, DWORD bufLength);
 DWORD ResetPipe(HANDLE f_usb, WORD wValue, WORD wIndex, WORD wLength, LPBYTE lpbuf);
-BOOL GetEvent(LPBYTE lpbuf, DWORD bufLength);
+int GetEvent(LPBYTE lpbuf, DWORD bufLength);
 DWORD ReadInquiryCommand(HANDLE fileHandle, char *strCompany, char *strModel, char *strVersion);
 DWORD DbgCommand(HANDLE fileHandle, BYTE subCmd, BYTE *dataBuffer, BOOL isWrite, DWORD readSize);
 int read_mem_data(HANDLE f_usb_in,HANDLE f_usb_out,unsigned int addr, char *buf,unsigned int size);

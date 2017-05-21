@@ -22,7 +22,7 @@ int CheckIfFileExists (LPCTSTR szFileName)
 
 char* GetFileOpenName(char * szFilter) 
 {	
-	static char szFilename[256];	
+	static char szFilename[1024];	
 	OPENFILENAME ofn;
 	char *pch;
 
@@ -60,7 +60,7 @@ char* GetFileOpenName(char * szFilter)
 
 char* GetFileSaveName(char * szFilter) 
 {	
-	static char szFilename[256];	
+	static char szFilename[1024];	
 	OPENFILENAME ofn;	
 	char *pch;
 
@@ -80,7 +80,7 @@ char* GetFileSaveName(char * szFilter)
 	ofn.nMaxFile = sizeof(szFilename);
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
-	ofn.lpstrDefExt = "ini";	
+	ofn.lpstrDefExt = "bmp";	
 	ofn.lpstrInitialDir = theApp.szFilePathName;
 	
 	ofn.lpstrTitle = "Save File";

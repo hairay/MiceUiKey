@@ -1336,10 +1336,10 @@ DWORD GetPipeConfiguration(HANDLE f_usb, LPBYTE lpbuf, DWORD bufLength)
 
 }
 
-BOOL GetEvent(LPBYTE lpbuf, DWORD bufLength)
+int GetEvent(LPBYTE lpbuf, DWORD bufLength)
 {
 	BOOL        ret = TRUE;  	
-	DWORD		cbRead;	
+	int		cbRead;	
 
 	while(ret == TRUE)
 	{
@@ -1351,15 +1351,18 @@ BOOL GetEvent(LPBYTE lpbuf, DWORD bufLength)
 							0,
 							lpbuf,
 							bufLength,
-							&cbRead,
+							(LPDWORD)&cbRead,
 							NULL
 							);
 		if(cbRead > 0)
 			break;
+
+		if(!ret)
+			cbRead = -(int)GetLastError();
 		Sleep(1);
 	}	
 
-	return ret;
+	return cbRead;
 }
 
 DWORD ResetPipe(HANDLE f_usb, WORD wValue, WORD wIndex, WORD wLength, LPBYTE lpbuf)
