@@ -1,7 +1,7 @@
 //*****************************************************************************
 //  Copyright (C) 2013 Cambridge Silicon Radio Ltd.
-//  $Header: /cvs/MICECore/threads/tsCommon/tsthread.c,v 1.3 2015/08/12 01:09:27 AV00287 Exp $
-//  $Change: 245218 $ $Date: 2015/08/12 01:09:27 $
+//  $Header: /mfp/MiceUiKey/MiceUiKey/tsthread.cpp,v 1.1 2016/05/30 03:48:52 AV00287 Exp $
+//  $Change: 245218 $ $Date: 2016/05/30 03:48:52 $
 //  
 /// @file
 /// Threading API functions

@@ -401,6 +401,8 @@ typedef struct _SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER {
 // button status
 #define SCSI_RDTC_BUTTON		0xa1
 
+#define SCSI_RDTC_SYS_INFO  	0xA3
+
 //Read ASIC register value
 #define SCSI_RDTC_ASIC_REG		0xB0
 
@@ -456,6 +458,19 @@ typedef struct
 	Uint32				delayMinutes;
 	char				phNum[60+2];
 }stFaxScanSetting;
+
+typedef struct
+{
+    unsigned long size;
+    unsigned short sysMem;
+    unsigned char mbVer;
+    unsigned char pdfSupport;    
+    unsigned char sysVersion[20];
+	unsigned char venderName[40];
+	unsigned char modelName[40];
+	unsigned char serialNumber[32];
+	unsigned char loaderVersion[20];
+} stSystemInfo, *stSystemInfoPtr;
 
 typedef enum
 {
@@ -696,7 +711,7 @@ int read_cmd_data(HANDLE f_usb_in,HANDLE f_usb_out,char *buf,unsigned int size, 
 int send_cmd_data(HANDLE f_usb_in,HANDLE f_usb_out,char *buf,unsigned int size, unsigned char SendCmd, unsigned char type,BOOL bPrinter);
 DWORD GetPipeConfiguration(HANDLE f_usb, LPBYTE lpbuf, DWORD bufLength);
 DWORD ResetPipe(HANDLE f_usb, WORD wValue, WORD wIndex, WORD wLength, LPBYTE lpbuf);
-BOOL GetEvent(LPBYTE lpbuf, DWORD bufLength);
+int GetEvent(LPBYTE lpbuf, DWORD bufLength);
 DWORD ReadInquiryCommand(HANDLE fileHandle, char *strCompany, char *strModel, char *strVersion);
 DWORD DbgCommand(HANDLE fileHandle, BYTE subCmd, BYTE *dataBuffer, BOOL isWrite, DWORD readSize);
 int read_mem_data(HANDLE f_usb_in,HANDLE f_usb_out,unsigned int addr, char *buf,unsigned int size);

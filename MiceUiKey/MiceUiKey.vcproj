@@ -45,6 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="ChartCtrl;ColourPicker"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;HOST_BASED"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -126,6 +127,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="ChartCtrl;ColourPicker"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;HOST_BASED"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
@@ -212,6 +214,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SelectLine.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -278,11 +284,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SelectLine.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
 			<File
 				RelativePath=".\targetver.h"
+				>
+			</File>
+			<File
+				RelativePath=".\usb_io.h"
 				>
 			</File>
 		</Filter>
@@ -301,6 +315,262 @@
 			</File>
 			<File
 				RelativePath=".\res\MiceUiKey.rc2"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="chart"
+			>
+			<File
+				RelativePath=".\ChartCtrl\ChartAxis.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartAxis.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartAxisLabel.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartAxisLabel.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartBalloonLabel.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartBalloonLabel.inl"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartBarSerie.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartBarSerie.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartCandlestickSerie.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartCandlestickSerie.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartCrossHairCursor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartCrossHairCursor.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartCtrl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartCtrl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartCursor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartCursor.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartDateTimeAxis.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartDateTimeAxis.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartDragLineCursor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartDragLineCursor.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartFont.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartFont.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartGanttSerie.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartGanttSerie.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartGradient.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartGradient.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartGrid.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartGrid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartLabel.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartLabel.inl"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartLegend.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartLegend.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartLineSerie.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartLineSerie.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartLogarithmicAxis.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartLogarithmicAxis.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartMouseListener.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartPointsArray.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartPointsArray.inl"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartPointsSerie.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartPointsSerie.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartScrollBar.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartScrollBar.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartSerie.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartSerie.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartSerieBase.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartSerieBase.inl"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartSeriesMouseListener.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartStandardAxis.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartStandardAxis.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartString.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartSurfaceSerie.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartSurfaceSerie.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartTitle.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartTitle.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartXYSerie.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\ChartXYSerie.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ChartCtrl\PointsOrdering.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Color"
+			>
+			<File
+				RelativePath=".\ColourPicker\ColourPicker.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ColourPicker\ColourPicker.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ColourPicker\ColourPopup.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ColourPicker\ColourPopup.h"
 				>
 			</File>
 		</Filter>

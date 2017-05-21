@@ -8,6 +8,32 @@
 #include "standard.h"
 #include "bios.h"
 #include "threads.h"
+#include "usb_io.h"
+#include "file.h"
+
+
+ class CNewCommandLineInfo : public CCommandLineInfo
+{
+public:
+	BOOL skipUi;
+	
+	void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast);
+};
+
+void CNewCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast)
+{
+	if(bFlag) 
+	{
+		CString sParam(lpszParam);
+		if (sParam.Left(1) == "s") {
+			skipUi = TRUE;
+			return;
+		}		
+	}
+
+	// Call the base class to ensure proper command line processing
+	CCommandLineInfo::ParseParam(lpszParam, bFlag, bLast);
+}
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -35,6 +61,7 @@ CMiceUiKeyApp::CMiceUiKeyApp()
             break;
 	szFilePathName[i+1]=0;
 	wsprintf(szIniFileName, "%s\\am3xtest.ini", szFilePathName);
+	wsprintf(szSysFileName, "%s\\SysInfo.ini", szFilePathName);	
 }
 
 
@@ -44,6 +71,56 @@ CMiceUiKeyApp theApp;
 
 
 // CMiceUiKeyApp initialization
+BOOL CMiceUiKeyApp::ReOpenDevice()
+{
+	BOOL retResult = FALSE;
+
+	if(m_hUSB)
+    {
+        close_usb(m_hUSB, m_hDbgIn, m_hDbgOut);
+		m_hUSB = NULL;
+		m_hDbgIn = NULL;
+		m_hDbgOut = NULL;
+	}
+	    	    		
+    if(retResult == FALSE)
+	{
+		char szVidStr[16], szPidStr[16], szTemp[64];
+		int retry =1;
+		
+		GetPrivateProfileString("Basic", "VID", "0638", szTemp, sizeof(szTemp), theApp.szIniFileName);			
+		theApp.gVid = (unsigned short)strtol(szTemp, NULL, 16);
+			
+		GetPrivateProfileString("Basic", "PID", "0", szTemp, sizeof(szTemp), theApp.szIniFileName);
+		theApp.gPid = (unsigned short)strtol(szTemp, NULL, 16);
+
+
+		while(m_hUSB == 0)
+		{
+			//wsprintf(szTemp, "gVid=%xh gPid=%xh", gVid, gPid);
+			//MessageBox(GetFocus(), szTemp, szIniFileName, MB_OK);
+			open_usb( &m_hUSB, &m_hDbgIn, &m_hDbgOut ,theApp.gVid , theApp.gPid);
+			if(m_hUSB) 
+				break;
+			wsprintf(szVidStr, "VID%d", retry);
+			GetPrivateProfileString("Basic", szVidStr, "0", szTemp, sizeof(szTemp), theApp.szIniFileName);
+			
+			theApp.gVid = (unsigned short)strtol(szTemp, NULL, 16);
+			if(theApp.gVid == 0)
+				break;
+			wsprintf(szPidStr, "PID%d", retry);
+			GetPrivateProfileString("Basic", szPidStr, "0", szTemp, sizeof(szTemp), theApp.szIniFileName);
+			theApp.gPid = (unsigned short)strtol(szTemp, NULL, 16);
+			retry ++;
+		}
+		
+		if(m_hUSB) 		
+		{
+			retResult = TRUE;
+		}
+	}	
+	return retResult;
+}
 
 BOOL CMiceUiKeyApp::InitInstance()
 {
@@ -71,9 +148,14 @@ BOOL CMiceUiKeyApp::InitInstance()
 	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 	char szTemp[128];	
 	char *ptr;
+	LPCTSTR pszParam = _T("Reset");
 
+	CNewCommandLineInfo cmdInfo;
+
+	cmdInfo.skipUi = FALSE;	
+	ParseCommandLine(cmdInfo); 	
 	TSprolog();
-		
+			
 	GetPrivateProfileString("Basic", "VID", "0638", szTemp, sizeof(szTemp), szIniFileName);
 	gVid = (Uint16)strtol(szTemp, &ptr, 16);
 	GetPrivateProfileString("Basic", "PID", "0", szTemp, sizeof(szTemp), szIniFileName);
@@ -84,21 +166,65 @@ BOOL CMiceUiKeyApp::InitInstance()
 
 	GetPrivateProfileString("OutFileName", "PreName", "", gPreFileName, sizeof(gPreFileName), szIniFileName);
 	gPreFileNum = GetPrivateProfileInt("OutFileName", "PreNum", 1,szIniFileName);
-
-	CMiceUiKeyDlg dlg;
-	m_pMainWnd = &dlg;
-	INT_PTR nResponse = dlg.DoModal();
-	if (nResponse == IDOK)
+		
+	if(cmdInfo.skipUi == FALSE)
 	{
-		// TODO: Place code here to handle when the dialog is
-		//  dismissed with OK
-	}
-	else if (nResponse == IDCANCEL)
-	{
-		// TODO: Place code here to handle when the dialog is
-		//  dismissed with Cancel
-	}
+		CMiceUiKeyDlg dlg;
+		m_pMainWnd = &dlg;	
 
+		INT_PTR nResponse = dlg.DoModal();
+		if (nResponse == IDOK)
+		{
+			// TODO: Place code here to handle when the dialog is
+			//  dismissed with OK
+		}
+		else if (nResponse == IDCANCEL)
+		{
+			// TODO: Place code here to handle when the dialog is
+			//  dismissed with Cancel
+		}
+	}
+	else
+	{
+		m_hUSB = NULL;
+
+		BOOL linkOK = ReOpenDevice();
+
+		if(linkOK)
+		{
+			BOOL retApi;
+
+			stSystemInfo sysInfo;
+
+			retApi = read_cmd_data(m_hDbgIn,m_hDbgOut,(char *)&sysInfo,sizeof(stSystemInfo), SCSI_RDTC_SYS_INFO, 0,FALSE);	
+			if(retApi)
+			{				
+				char szText[32];
+					
+				WritePrivateProfileString("basic", "Update", "1", szSysFileName);	
+				sprintf(szText, "%d",sysInfo.sysMem);	
+				WritePrivateProfileString("basic", "sysMem", szText, szSysFileName);	
+				sprintf(szText, "%d",sysInfo.mbVer);	
+				WritePrivateProfileString("basic", "mbVer", szText, szSysFileName);	
+				sprintf(szText, "%d",sysInfo.pdfSupport);	
+				WritePrivateProfileString("basic", "pdfSupport", szText, szSysFileName);	
+				WritePrivateProfileString("basic", "sysVersion", (LPCSTR)sysInfo.sysVersion, szSysFileName);	
+				WritePrivateProfileString("basic", "venderName", (LPCSTR)sysInfo.venderName, szSysFileName);	
+				WritePrivateProfileString("basic", "modelName", (LPCSTR)sysInfo.modelName, szSysFileName);	
+				WritePrivateProfileString("basic", "serialNumber", (LPCSTR)sysInfo.serialNumber, szSysFileName);
+				WritePrivateProfileString("basic", "loaderVersion", (LPCSTR)sysInfo.loaderVersion, szSysFileName);	
+			}
+			else
+			{
+				linkOK = FALSE;
+			}
+			close_usb(m_hUSB, m_hDbgIn, m_hDbgOut);
+		}
+		if(linkOK == FALSE)
+		{			
+			WritePrivateProfileString("basic", "Update", "0", szSysFileName);	
+		}
+	}
 	// Since the dialog has been closed, return FALSE so that we exit the
 	//  application, rather than start the application's message pump.
 	return FALSE;

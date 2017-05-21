@@ -1,7 +1,7 @@
 //*****************************************************************************
 //  Copyright (C) 2013 Cambridge Silicon Radio Ltd.
-//  $Header: /cvs/MICECore/threads/tsCommon/tsmsgq.c,v 1.2 2015/08/10 07:37:04 AV00287 Exp $
-//  $Change: 245075 $ $Date: 2015/08/10 07:37:04 $
+//  $Header: /mfp/MiceUiKey/MiceUiKey/tsmsgq.cpp,v 1.1 2016/05/30 03:48:52 AV00287 Exp $
+//  $Change: 245075 $ $Date: 2016/05/30 03:48:52 $
 //  
 /// @file
 /// Mail/Message Queue API functions

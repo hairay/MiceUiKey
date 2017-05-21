@@ -1,7 +1,7 @@
 //*****************************************************************************
 // Copyright (C) 2012 Cambridge Silicon Radio Ltd.
-// $Header: /cvs/MICECore/Include/bsp/arch.h,v 1.2 2015/08/12 01:13:25 AV00287 Exp $
-// $Change: 205871 $ $Date: 2015/08/12 01:13:25 $
+// $Header: /mfp/MiceUiKey/MiceUiKey/arch.h,v 1.1 2016/05/30 03:48:51 AV00287 Exp $
+// $Change: 205871 $ $Date: 2016/05/30 03:48:51 $
 //
 /// @file
 /// Machine Architecture for 4xxx chips.

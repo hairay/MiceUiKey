@@ -1,7 +1,7 @@
 //*****************************************************************************
 //  Copyright (C) 2012 Cambridge Silicon Radio Ltd.
-//  $Header: /cvs/MICECore/threads/tsCommon/tslog.c,v 1.2 2015/08/10 07:37:04 AV00287 Exp $
-//  $Change: 244438 $ $Date: 2015/08/10 07:37:04 $
+//  $Header: /mfp/MiceUiKey/MiceUiKey/tslog.cpp,v 1.1 2016/05/30 03:48:52 AV00287 Exp $
+//  $Change: 244438 $ $Date: 2016/05/30 03:48:52 $
 //
 /// @file
 /// Logging utilities

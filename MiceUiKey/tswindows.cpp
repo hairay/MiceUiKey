@@ -1,7 +1,7 @@
 //*****************************************************************************
 //  Copyright (C) 2013 Cambridge Silicon Radio Ltd.
-//  $Header: /cvs/MICECore/threads/tsWindows_NT/tswindows.c,v 1.1 2015/05/04 01:21:51 AV00287 Exp $
-//  $Change: 245438 $ $Date: 2015/05/04 01:21:51 $
+//  $Header: /mfp/MiceUiKey/MiceUiKey/tswindows.cpp,v 1.1 2016/05/30 03:48:52 AV00287 Exp $
+//  $Change: 245438 $ $Date: 2016/05/30 03:48:52 $
 //  
 /// @file
 //  Windows NT Thread layer API
