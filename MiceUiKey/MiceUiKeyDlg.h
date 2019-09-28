@@ -26,7 +26,7 @@ public:
 	//CChartLineSerie *pLineSeries2;
 
 	CString m_loop_count;
-	UINT    m_points;
+	UINT    m_points, m_maxXrange;
 	CChartCtrl m_ChartCtrl;
 	CChartCrossHairCursor *pCursor;
 	CChartDragLineCursor* pDragLine;
@@ -64,4 +64,6 @@ public:
 	afx_msg void OnBnClickedSetting();
 	afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
 	afx_msg void OnBnClickedGoto();
+	afx_msg void OnBnClickedAdd();
+	afx_msg void OnBnClickedSub();
 };

@@ -25,12 +25,16 @@
 #define IDC_OUTPUT_LIST                 1010
 #define IDC_STATUS2                     1011
 #define IDC_FILE_NAME                   1011
+#define IDC_TEMP_LIST                   1011
 #define IDC_BUTTON1                     1012
 #define IDC_SETTING                     1012
 #define IDC_MAX_POINTS                  1013
 #define IDC_POINT_NUM                   1014
 #define IDC_BUTTON2                     1015
 #define IDC_GOTO                        1015
+#define IDC_ADD                         1016
+#define IDC_ADD2                        1017
+#define IDC_SUB                         1017
 #define ID_LINE_0                       32771
 #define ID_LINE_1                       32772
 #define ID_LINE_2                       32773
@@ -51,14 +55,36 @@
 #define ID_LINE_17                      32788
 #define ID_LINE_18                      32789
 #define ID_LINE_19                      32790
+#define ID_LINE20                       32791
+#define ID_LINE21                       32792
+#define ID_LINE22                       32793
+#define ID_LINE23                       32794
+#define ID_LINE24                       32795
+#define ID_LINE25                       32796
+#define ID_LINE26                       32797
+#define ID_LINE27                       32798
+#define ID_LINE28                       32799
+#define ID_LINE29                       32800
+#define ID_LINE30                       32801
+#define ID_LINE31                       32802
+#define ID_LINE32                       32803
+#define ID_LINE33                       32804
+#define ID_LINE34                       32805
+#define ID_LINE35                       32806
+#define ID_LINE36                       32807
+#define ID_LINE37                       32808
+#define ID_LINE38                       32809
+#define ID_LINE39                       32810
+#define ID_LINE40                       32811
+#define ID_LINE41                       32812
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        131
-#define _APS_NEXT_COMMAND_VALUE         32791
-#define _APS_NEXT_CONTROL_VALUE         1016
+#define _APS_NEXT_COMMAND_VALUE         32813
+#define _APS_NEXT_CONTROL_VALUE         1017
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

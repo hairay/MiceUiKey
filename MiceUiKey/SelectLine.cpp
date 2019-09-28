@@ -37,6 +37,8 @@ extern char gViewSensor[MAX_SEN_IO_NUM];
 extern char gSensorTextTable[MAX_SEN_IO_NUM][MAX_SEN_IO_TEXT_LEN];
 extern char gViewIo[MAX_SEN_IO_NUM];
 extern char gIoTextTable[MAX_SEN_IO_NUM][MAX_SEN_IO_TEXT_LEN];
+extern char gViewTemp[MAX_SEN_IO_NUM];
+extern char gTempTextTable[MAX_SEN_IO_NUM][MAX_SEN_IO_TEXT_LEN];
 
 BOOL SelectLine::OnInitDialog()
 {
@@ -78,6 +80,22 @@ BOOL SelectLine::OnInitDialog()
 		}
 	}
 
+	for(i=0; i<MAX_SEN_IO_NUM; i++)
+	{
+		if(gTempTextTable[i][0])
+		{
+			wsprintf(szShow, "%d:%s", i, gTempTextTable[i]);
+			SendDlgItemMessage(IDC_TEMP_LIST, LB_ADDSTRING, 0, (LPARAM)(LPSTR)szShow);
+			if(gViewTemp[i])
+				SendDlgItemMessage(IDC_TEMP_LIST, LB_SETSEL, (WPARAM)TRUE, i);
+			else
+				SendDlgItemMessage(IDC_TEMP_LIST, LB_SETSEL, (WPARAM)FALSE, i);
+		}
+		else
+		{
+			break;
+		}
+	}
 	return TRUE;
 }
 void SelectLine::OnBnClickedOk()
@@ -97,6 +115,13 @@ void SelectLine::OnBnClickedOk()
 	{
 		ret = SendDlgItemMessage(IDC_OUTPUT_LIST, LB_GETSEL, i, 0);
 		gViewIo[i] = (char)ret;
+	}
+
+	count = SendDlgItemMessage(IDC_TEMP_LIST, LB_GETCOUNT, 0, 0);
+	for(i=0; i<count; i++)
+	{
+		ret = SendDlgItemMessage(IDC_TEMP_LIST, LB_GETSEL, i, 0);
+		gViewTemp[i] = (char)ret*2;
 	}
 
 	OnOK();

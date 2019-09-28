@@ -155,17 +155,32 @@ char gIoTextTable[MAX_SEN_IO_NUM][MAX_SEN_IO_TEXT_LEN] = {
 #endif	
 };
 
-static BYTE sMaxLineId=0, sSelectLine;
-static Uint32 sSensorMaxCount=eMAX_SENSOR_NUM;
-static Uint32 sIoMaxCount=eMAX_IO_SN_NUM;
+static DWORD gTempColor[MAX_SEN_IO_NUM];
+char gViewTemp[MAX_SEN_IO_NUM];
+static BYTE gTempLineId[MAX_SEN_IO_NUM];
+char gTempTextTable[MAX_SEN_IO_NUM][MAX_SEN_IO_TEXT_LEN] = {
+	"A3_TEMP",
+	"A4_TEMP",
+	"Env_TEMP"
+};
+
+static int sMaxLineId=0, sSelectLine;
+static int sSensorMaxCount=eMAX_SENSOR_NUM;
+static int sIoMaxCount=eMAX_IO_SN_NUM;
+static int sTempMaxCount=0, sSkipTempCount =0;
 static char sInitTime;
 
 DWORD GetMsTimeFromStart(DWORD curTime, DWORD startTime)
 {	
+	DWORD time;
+
 	if(curTime >= startTime)
-		return (curTime - startTime);	
+		time = (curTime - startTime);
 	else	
-		return ( 0xFFFFFFFF - startTime + curTime + 1);					
+		time = ( 0xFFFFFFFF - startTime + curTime + 1);
+	if (time > 0xFFFFFFF)
+		time = 0;
+	return time;
 }
 
 static Sint32 ReadButtonThread(void *parm)
@@ -231,7 +246,8 @@ static Sint32 SaveButtonThread(void *parm)
 	DWORD    startTime, lastTime, uiData, printerData;
 	CChartXYSerie* pSeries = NULL;
 	double xPos, yPos,yLastPos;
-	char    match, lineId, view, offset, state;
+	char    match, lineId, view;
+	short  offset, state;
 	Uint64	allTime = 0;
 
 	while (1)
@@ -249,7 +265,7 @@ static Sint32 SaveButtonThread(void *parm)
 				printerData ++;
 				match = 0;
 				lineId = gSensorLineId[id];
-				offset = sMaxLineId-lineId-1;
+				offset = sMaxLineId-lineId-sSkipTempCount-1;
 				view = gViewSensor[id];
 				pSeries = dlgPtr->pLineSeries[lineId];
 				state = (char)(eventData.msg1 >> 8);
@@ -267,7 +283,7 @@ static Sint32 SaveButtonThread(void *parm)
 				printerData ++;
 				match = 1;
 				lineId = gIoLineId[id];
-				offset = sMaxLineId-lineId-1;
+				offset = sMaxLineId-lineId-sSkipTempCount-1;
 				view = gViewIo[id];
 				state = (char)(eventData.msg1 >> 8);
 				pSeries = dlgPtr->pLineSeries[lineId];
@@ -275,6 +291,23 @@ static Sint32 SaveButtonThread(void *parm)
 				if(id < sIoMaxCount)
 					namePtr = gIoTextTable[id];
 				sprintf(szTemp, "%40s %6u %8u %12u %12u\r", namePtr, id, (BYTE)(eventData.msg1 >> 8), eventData.msg2, eventData.msg3);
+				SaveLineToFile(hMcuFile, szTemp, strlen(szTemp));	
+			}
+			else if(eventData.msg1 & 0x40000000) //printer temperature
+			{
+				BYTE id = (BYTE)(eventData.msg1 >> 16);
+				char *namePtr="unknown3";
+				
+				printerData ++;
+				match = 2;
+				lineId = gTempLineId[id];				
+				view = gViewTemp[id];
+				offset = state = (short)(eventData.msg1 & 0xFFFF);
+				pSeries = dlgPtr->pLineSeries[lineId];
+				//byte3:printer io<0x20000000>   byte2: io id  byte 1: io state
+				if(id < sTempMaxCount)
+					namePtr = gTempTextTable[id];
+				sprintf(szTemp, "%40s %6u %8u %12u %12u\r", namePtr, id, (short)(eventData.msg1 & 0xFFFF), eventData.msg2, eventData.msg3);
 				SaveLineToFile(hMcuFile, szTemp, strlen(szTemp));	
 			}
 			else if(eventData.msg1 == 1) //start record key
@@ -291,7 +324,7 @@ static Sint32 SaveButtonThread(void *parm)
 				//sprintf(szTemp, "%sMCU_%s.log", theApp.szFilePathName,pszDateTime);				
 				//hLogFile = StartSaveFile(szTemp);
 
-				sprintf(szTemp, "1 0 0 %lu\r", eventData.msg4.ullval);
+				sprintf(szTemp, "1 0 0 %llu\r", eventData.msg4.ullval);
 				SaveLineToFile(hUiFile, szTemp, strlen(szTemp));
 				sprintf(szTemp, "%40s %6s %8s %12s %12s\r", "Name", "ID", "state","time(us)","time(ms)");
 				SaveLineToFile(hMcuFile, szTemp, strlen(szTemp));	
@@ -303,7 +336,7 @@ static Sint32 SaveButtonThread(void *parm)
 			}
 			else if(eventData.msg1 == 0) //stop record key
 			{
-				sprintf(szTemp, "0 0 0 %lu\r", eventData.msg4.ullval);
+				sprintf(szTemp, "0 0 0 %llu\r", eventData.msg4.ullval);
 				SaveLineToFile(hUiFile, szTemp, strlen(szTemp));	
 				
 				send_cmd_data(m_hDbgIn,m_hDbgOut,NULL,0,SCSI_SDTC_BUTTON,0, FALSE);  
@@ -338,11 +371,11 @@ static Sint32 SaveButtonThread(void *parm)
 			else if(hUiFile != INVALID_HANDLE_VALUE && eventData.msg1 == 2)//save key
 			{
 				uiData ++;
-				sprintf(szTemp, "%d %d %d %lu\r", eventData.msg1, eventData.msg2, eventData.msg3,eventData.msg4.ullval);
+				sprintf(szTemp, "%d %d %d %llu\r", eventData.msg1, eventData.msg2, eventData.msg3,eventData.msg4.ullval);
 				SaveLineToFile(hUiFile, szTemp, strlen(szTemp));	
 			}	
 
-			if(match <= 1 && hMcuFile != INVALID_HANDLE_VALUE)
+			if(match <= 2 && hMcuFile != INVALID_HANDLE_VALUE)
 			{				
 				if(sInitTime == 0)
 				{					
@@ -351,7 +384,7 @@ static Sint32 SaveButtonThread(void *parm)
 				}
 				//time = GetMsTimeFromStart(eventData.msg2, startTime);
 				allTime += GetMsTimeFromStart(eventData.msg2, lastTime);
-				if(view)
+				if(view == 1)
 				{
 					xPos = (double)allTime/100000;
 					if(state)
@@ -373,13 +406,31 @@ static Sint32 SaveButtonThread(void *parm)
 					}		
 					dlgPtr->m_ChartCtrl.EnableRefresh(TRUE);
 				}
+				else if(view == 2)
+				{
+					xPos = (double)allTime/100000;
+					yPos = (double)offset/10.0;
+					dlgPtr->m_ChartCtrl.EnableRefresh(FALSE);
+					if(dlgPtr->lineCount[lineId] == 0xFFFFFFFF)
+					{						
+						pSeries->AddPoint(xPos, yPos);
+						dlgPtr->lineCount[lineId] = 0;						
+					}
+					else
+					{												
+						pSeries->AddPoint(xPos,yPos);
+						dlgPtr->lineCount[lineId] ++;	
+					}		
+					dlgPtr->m_ChartCtrl.EnableRefresh(TRUE);
+				}
 
 				BYTE id = (BYTE)(eventData.msg1 >> 16);
 				if(match == 0)
 					sprintf(szTemp, "%40s %6u %8u %12u %15.4lf\r\n", gSensorTextTable[id], id, (BYTE)(eventData.msg1 >> 8), eventData.msg2, (double)allTime/1000);
-				else
+				else if(match == 1)
 					sprintf(szTemp, "%40s %6u %8u %12u %15.4lf\r\n", gIoTextTable[id], id, (BYTE)(eventData.msg1 >> 8), eventData.msg2, (double)allTime/1000);
-
+				else if(match == 2)
+					sprintf(szTemp, "%40s %6u %8u %12u %15.4lf\r\n", gTempTextTable[id], id, (short)(eventData.msg1 & 0xFFFF), eventData.msg2, (double)allTime/1000);
 				lastTime = eventData.msg2;
 			}
 		}
@@ -549,10 +600,13 @@ CMiceUiKeyDlg::CMiceUiKeyDlg(CWnd* pParent /*=NULL*/)
 	m_points = 0;
 }
 
+#define DEFAULT_COLOR_NUM	8
 void CMiceUiKeyDlg::GetSensorIoInfo(void)
 {
 	CChartXYSerie* pSeries = NULL;
-	DWORD color[3] = {0xFF, 0xFF00, 0xFF0000};
+	//0x00bbggrr	
+	DWORD color[] = { 0x265290, 0x0000FF, 0x0990FE, 0x00D7FF, 0x198319,
+		 			  0xF04A4A, 0x821982, 0x808080};
 	char szItem[12], szTemp[MAX_SEN_IO_TEXT_LEN];
 	int i, len;
 	
@@ -563,7 +617,7 @@ void CMiceUiKeyDlg::GetSensorIoInfo(void)
 	m_ChartCtrl.RemoveAllSeries();
 	sMaxLineId = 0;
 
-	for(i=0; i<MAX_SEN_IO_NUM; i++)
+	for(sSensorMaxCount,i=0; i<MAX_SEN_IO_NUM; i++)
 	{
 		sprintf(szItem, "%d", i);
 		len = GetPrivateProfileString("268435456", szItem, "", szTemp, sizeof(szTemp), theApp.szIniFileName);
@@ -588,7 +642,7 @@ void CMiceUiKeyDlg::GetSensorIoInfo(void)
 				pLineSeries[sMaxLineId]->SetWidth(2);
 				pLineSeries[sMaxLineId]->SetPenStyle(0);
 				if(gSensorColor[i] == 0x1A)
-					pSeries->SetColor(color[sMaxLineId%3]);
+					pSeries->SetColor(color[sMaxLineId%DEFAULT_COLOR_NUM]);
 				else
 					pSeries->SetColor(gSensorColor[i]);
 				sMaxLineId++;
@@ -603,7 +657,7 @@ void CMiceUiKeyDlg::GetSensorIoInfo(void)
 		}
 	}
 
-	for(i=0; i<MAX_SEN_IO_NUM; i++)
+	for(sIoMaxCount,i=0; i<MAX_SEN_IO_NUM; i++)
 	{
 		sprintf(szItem, "%d", i);
 		len = GetPrivateProfileString("536870912", szItem, "", szTemp, sizeof(szTemp), theApp.szIniFileName);
@@ -627,7 +681,7 @@ void CMiceUiKeyDlg::GetSensorIoInfo(void)
 				pSeries = pLineSeries[sMaxLineId];
 				pSeries->SetName(gIoTextTable[i]);
 				if(gIoColor[i] == 0x1A)
-					pSeries->SetColor(color[sMaxLineId%3]);
+					pSeries->SetColor(color[sMaxLineId%DEFAULT_COLOR_NUM]);
 				else
 					pSeries->SetColor(gIoColor[i]);
 
@@ -643,14 +697,56 @@ void CMiceUiKeyDlg::GetSensorIoInfo(void)
 		}
 	}
 
-	for(i=0; i<sMaxLineId; i++)
+	for(sTempMaxCount=0,sSkipTempCount=0,i=0; i<MAX_SEN_IO_NUM; i++)
+	{
+		sprintf(szItem, "%d", i);
+		len = GetPrivateProfileString("1073741824", szItem, "", szTemp, sizeof(szTemp), theApp.szIniFileName);
+		if(len > 1)
+		{
+			strcpy(gTempTextTable[i], szTemp);
+			//Get gIoColor
+			sprintf(szItem, "Color%d", i);	
+			GetPrivateProfileString("1073741824", szItem, "1A", szTemp, sizeof(szTemp), theApp.szIniFileName);
+			gTempColor[i] = (DWORD)strtol(szTemp, NULL, 16);
+
+			sprintf(szItem, "View%d", i);
+			gViewTemp[i] = GetPrivateProfileInt("1073741824", szItem, 0, theApp.szIniFileName);			
+			if(gViewTemp[i])
+			{
+				gViewTemp[i] = 2;
+				gTempLineId[i] = sMaxLineId;				
+				lineCount[sMaxLineId] =0xFFFFFFFF;
+				pLineSeries[sMaxLineId] = m_ChartCtrl.CreateLineSerie(0, 0);	
+				pLineSeries[sMaxLineId]->SetWidth(2);
+				pLineSeries[sMaxLineId]->SetPenStyle(0);
+				pSeries = pLineSeries[sMaxLineId];
+				pSeries->SetName(gTempTextTable[i]);
+				if(gTempColor[i] == 0x1A)
+					pSeries->SetColor(color[sMaxLineId%DEFAULT_COLOR_NUM]);
+				else
+					pSeries->SetColor(gTempColor[i]);
+
+				sMaxLineId++;
+				sSkipTempCount ++;
+			}
+			
+			sTempMaxCount = i+1;
+		}
+		else
+		{
+			gTempTextTable[i][0] = 0;
+			break;
+		}
+	}
+
+	for(i=0; i<sMaxLineId-sSkipTempCount; i++)
 	{
 		TChartString strName;
 		char temp[12];
 
 		pSeries = pLineSeries[i];
 		strName = pSeries->GetName();
-		sprintf(temp, "_%d",sMaxLineId-i-1);
+		sprintf(temp, "_%d",sMaxLineId-sSkipTempCount-i-1);
 		strName += temp;
 		pSeries->SetName(strName);
 	}
@@ -682,6 +778,8 @@ ON_WM_MOUSEWHEEL()
 ON_BN_CLICKED(IDC_SETTING, &CMiceUiKeyDlg::OnBnClickedSetting)
 ON_WM_MENUSELECT()
 ON_BN_CLICKED(IDC_GOTO, &CMiceUiKeyDlg::OnBnClickedGoto)
+ON_BN_CLICKED(IDC_ADD, &CMiceUiKeyDlg::OnBnClickedAdd)
+ON_BN_CLICKED(IDC_SUB, &CMiceUiKeyDlg::OnBnClickedSub)
 END_MESSAGE_MAP()
 
 
@@ -708,6 +806,14 @@ public:
 		sprintf(temp, "%10.4lf ms = %10.4lf us",time, time*1000);
 		theApp.m_pMainWnd->SetDlgItemText(IDC_STATUS, temp);
     }
+	else if(mouseEvent == CChartMouseListener::MouseMove)
+	{
+		char temp[512];		
+		CMiceUiKeyDlg *dlgPtr = (CMiceUiKeyDlg *)theApp.m_pMainWnd;
+		
+		sprintf(temp, "%10.4lf ms %5.1lf *C",dlgPtr->pCursor->XVal*100, dlgPtr->pCursor->YVal * 10);	
+		theApp.m_pMainWnd->SetDlgItemText(IDC_FILE_NAME, temp);
+	}
   }
 };
 
@@ -742,13 +848,13 @@ BOOL CMiceUiKeyDlg::OnInitDialog()
 	//  when the application's main window is not a dialog	
 	CChartXYSerie* pSeries = NULL;
 
-
+	m_maxXrange = 60;
 	CChartStandardAxis* pBottomAxis = 
 		m_ChartCtrl.CreateStandardAxis(CChartCtrl::BottomAxis);
-	pBottomAxis->SetMinMax(0, 60);
+	pBottomAxis->SetMinMax(0, m_maxXrange);
 	CChartStandardAxis* pLeftAxis =
 		m_ChartCtrl.CreateStandardAxis(CChartCtrl::LeftAxis);
-	pLeftAxis->SetMinMax(0, 16);
+	pLeftAxis->SetMinMax(0, 20);
 	//CChartStandardAxis* pTopAxis =
 	//	m_ChartCtrl.CreateStandardAxis(CChartCtrl::TopAxis);
 	//pTopAxis->SetMinMax(0, 10);
@@ -769,8 +875,8 @@ BOOL CMiceUiKeyDlg::OnInitDialog()
 	  m_ChartCtrl.CreateDragLineCursor(CChartCtrl::BottomAxis);
 	// Hides the mouse when it is over the plotting area.
 	m_ChartCtrl.ShowMouseCursor(false);
+	//m_ChartCtrl.SetBackColor(0x000000);	
 	m_ChartCtrl.GetLegend()->SetVisible(true);
-
 	m_pMouseListen = new CCustomMouseListener();
 	m_ChartCtrl.RegisterMouseListener(m_pMouseListen);	
 
@@ -990,16 +1096,17 @@ void CMiceUiKeyDlg::OpenFileName(char *fileName)
 	char	*fileData =NULL, szTemp[1024];
 	BOOL	retBool, ret = TRUE;	
 	char	seps[]   = " \r\n";	
-	char    name[MAX_SEN_IO_TEXT_LEN], match, lineId, view, offset;
+	char    name[MAX_SEN_IO_TEXT_LEN], match, lineId, view;
+	int     offset, i, recordState[MAX_SEN_IO_NUM], recordCount;
 	char	*token;		
 	DWORD	tokenNum = 0, data[8];
 	CChartXYSerie* pSeries = NULL;
 	double xPos, yPos,yLastPos;
-	Uint64	allTime = 0;
+	Uint64	allTime = 0, lastAllTime;
 
 	if(fileName == NULL)
 	{
-		pFileName = GetFileOpenName("*.txt");
+		pFileName = GetFileOpenName("Text File (*.txt)\0*.txt\0");
 		if(pFileName == NULL)
 			goto RETURN;
 	}
@@ -1029,9 +1136,9 @@ void CMiceUiKeyDlg::OpenFileName(char *fileName)
 	}
 	strcpy(szTemp, pFileName);
 	int len = strlen(szTemp);
-	szTemp[len-3] = 'l';
-	szTemp[len-2] = 'o';
-	szTemp[len-1] = 'g';
+	szTemp[len-3] = 'c';
+	szTemp[len-2] = 's';
+	szTemp[len-1] = 'v';
 	hFile = CreateFile(szTemp,           
 				GENERIC_WRITE,              
 				FILE_SHARE_WRITE ,          
@@ -1041,6 +1148,24 @@ void CMiceUiKeyDlg::OpenFileName(char *fileName)
 				NULL);  
 
 	GetSensorIoInfo();
+
+	for(i=0; i<sMaxLineId; i++)
+		recordState[i] = 0xFFFF;
+	recordCount = 0;
+
+	sprintf(szTemp, "%s","time(ms)");
+	WriteFile(hFile, szTemp, strlen(szTemp), &rDWORD, NULL);
+	for(i=0; i<sMaxLineId; i++)
+	{
+		TChartString strName;
+		
+		pSeries = pLineSeries[i];
+		strName = pSeries->GetName();
+		sprintf(szTemp, ",%s",strName.c_str());
+		WriteFile(hFile, szTemp, strlen(szTemp), &rDWORD, NULL);		
+	}	
+	WriteFile(hFile, "\r\n", 2, &rDWORD, NULL);
+
 	if(fileName == NULL)
 		strcpy(m_FileName, pFileName);
 	token = strtok( fileData, seps );
@@ -1059,7 +1184,7 @@ void CMiceUiKeyDlg::OpenFileName(char *fileName)
 			if(strcmp(gSensorTextTable[data[0]], name) ==0)
 			{
 				lineId = gSensorLineId[data[0]];
-				offset = sMaxLineId-lineId-1;
+				offset = sMaxLineId-lineId-sSkipTempCount-1;
 				view = gViewSensor[data[0]];
 				pSeries = pLineSeries[lineId];
 				match = 0;
@@ -1067,13 +1192,24 @@ void CMiceUiKeyDlg::OpenFileName(char *fileName)
 			else if(strcmp(gIoTextTable[data[0]], name) ==0)
 			{
 				lineId = gIoLineId[data[0]];
-				offset = sMaxLineId-lineId-1;
+				offset = sMaxLineId-lineId-sSkipTempCount-1;
 				view = gViewIo[data[0]];
 				pSeries = pLineSeries[lineId];
 				match = 1;
 			}
-			if(match <= 1)
+			else if(strcmp(gTempTextTable[data[0]], name) ==0)
+			{
+				lineId = gTempLineId[data[0]];
+				offset = data[1];
+				view = gViewTemp[data[0]];
+				pSeries = pLineSeries[lineId];
+				match = 2;
+			}
+			if(match <= 2)
 			{				
+				if(recordState[lineId] == 0xFFFF && view)
+					recordCount ++;
+
 				if(sInitTime == 0)
 				{					
 					lastTime = startTime = data[2];
@@ -1081,15 +1217,20 @@ void CMiceUiKeyDlg::OpenFileName(char *fileName)
 				}
 				//time = GetMsTimeFromStart(data[2], startTime);				
 				allTime += GetMsTimeFromStart(data[2], lastTime);
-				if(view)
+				if(view == 1)
 				{
 					//xPos = (double)time/100000;
 					xPos = (double)allTime/100000;
 					if(data[1])
+					{
 						yPos = (double)offset + 0.9;
+						recordState[lineId] = offset*10 + 9;
+					}
 					else
+					{
 						yPos = (double)offset + 0.1;
-
+						recordState[lineId] = offset*10 + 1;
+					}
 					if(lineCount[lineId] == 0xFFFFFFFF)
 					{						
 						pSeries->AddPoint(xPos, yPos);
@@ -1103,17 +1244,38 @@ void CMiceUiKeyDlg::OpenFileName(char *fileName)
 						lineCount[lineId] += 2;	
 					}									
 				}
-				lastTime = data[2];		
-				if(match == 0)
-					sprintf(szTemp, "%40s %6u %8u %12u %15.4lf\r\n", gSensorTextTable[data[0]], data[0], data[1], data[2], (double)allTime/1000);
-				else
-					sprintf(szTemp, "%40s %6u %8u %12u %15.4lf\r\n", gIoTextTable[data[0]], data[0], data[1], data[2], (double)allTime/1000);
+				else if(view == 2)
+				{
+					xPos = (double)allTime/100000;					
+					yPos = (double)offset/10;
+					recordState[lineId] = offset;
+
+					if(lineCount[lineId] == 0xFFFFFFFF)
+					{						
+						pSeries->AddPoint(xPos, yPos);
+						lineCount[lineId] = 0;						
+					}
+					else
+					{												
+						pSeries->AddPoint(xPos,yPos);
+						lineCount[lineId] ++;	
+					}	
+				}
+				lastTime = data[2];						
 			}
-			else
+			
+			if(view && allTime != lastAllTime && recordCount == sMaxLineId)
 			{
-				sprintf(szTemp, "%40s %6s %8s %12s %20s\r\n", "Name", "ID", "state","time(us)","time(ms)");
+				sprintf(szTemp, "%-10.4lf", (double)allTime/1000);
+				WriteFile(hFile, szTemp, strlen(szTemp), &rDWORD, NULL);	
+				for(i=0; i<sMaxLineId; i++)
+				{
+					sprintf(szTemp, ",%u", recordState[i]);
+					WriteFile(hFile, szTemp, strlen(szTemp), &rDWORD, NULL);	
+				}
+				WriteFile(hFile, "\r\n", 2, &rDWORD, NULL);
 			}
-			WriteFile(hFile, szTemp, strlen(szTemp), &rDWORD, NULL);						
+			lastAllTime = allTime;
 			tokenNum = 0;
 		}
 		/* Get next token: */
@@ -1228,6 +1390,20 @@ void CMiceUiKeyDlg::OnBnClickedSetting()
 			}
 		}
 
+		for(i=0; i<MAX_SEN_IO_NUM; i++)
+		{
+			if(gTempTextTable[i][0])
+			{
+				sprintf(szItem, "View%d", i);
+				sprintf(szVale, "%d", gViewTemp[i]);
+				WritePrivateProfileString("1073741824", szItem, szVale, theApp.szIniFileName);	
+			}
+			else
+			{
+				break;
+			}
+		}
+
 		if(m_FileName[0])
 			OpenFileName(m_FileName);
 	}
@@ -1238,7 +1414,7 @@ void CMiceUiKeyDlg::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
 	CDialog::OnMenuSelect(nItemID, nFlags, hSysMenu);
 	
 	// TODO: Add your message handler code here
-	if(nItemID >= ID_LINE_0 && nItemID <= ID_LINE_19)
+	if(nItemID >= ID_LINE_0 && nItemID <= ID_LINE39)
 	{
 		int num = nItemID - ID_LINE_0;
 		if(num < sMaxLineId)
@@ -1273,7 +1449,27 @@ void CMiceUiKeyDlg::OnBnClickedGoto()
 	int num = m_points * 2;
 	double xPos;
 	xPos = pLineSeries[sSelectLine]->GetXPointValue(num);
-	thumbPos = (int)(xPos/6);
+	thumbPos = (int)(xPos/(m_maxXrange/10));
 	pAxis->m_pScrollBar->OnHScroll(SB_THUMBPOSITION, thumbPos);
 	m_ChartCtrl.RefreshCtrl();
+}
+
+void CMiceUiKeyDlg::OnBnClickedAdd()
+{
+	// TODO: Add your control notification handler code here
+	CChartAxis* pAxis = m_ChartCtrl.GetBottomAxis();
+	if(m_maxXrange >= 24)
+		m_maxXrange /= 2;
+
+	pAxis->SetMinMax(0, m_maxXrange);
+}
+
+void CMiceUiKeyDlg::OnBnClickedSub()
+{
+	// TODO: Add your control notification handler code here
+	CChartAxis* pAxis = m_ChartCtrl.GetBottomAxis();
+	if(m_maxXrange < 60000)
+		m_maxXrange *= 2;
+	
+	pAxis->SetMinMax(0, m_maxXrange);	
 }

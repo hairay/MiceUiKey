@@ -29,17 +29,19 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL
 // Dialog
 //
 
-IDD_SET_LINE_DIALOG DIALOGEX 0, 0, 362, 274
+IDD_SET_LINE_DIALOG DIALOGEX 0, 0, 557, 275
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Select Input Output"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,253,253,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,305,253,50,14
+    DEFPUSHBUTTON   "OK",IDOK,253,254,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,500,254,50,14
     LISTBOX         IDC_INPUT_LIST,7,36,162,208,LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LISTBOX         IDC_OUTPUT_LIST,200,36,155,208,LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_OUTPUT_LIST,182,37,155,208,LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Input Settings",IDC_STATIC,12,18,133,12
     LTEXT           "Output Settings",IDC_STATIC,208,19,133,12
+    LTEXT           "Temperature Settings",IDC_STATIC,369,18,133,12
+    LISTBOX         IDC_TEMP_LIST,354,38,155,208,LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
 
@@ -54,9 +56,9 @@ BEGIN
     IDD_SET_LINE_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 355
+        RIGHTMARGIN, 550
         TOPMARGIN, 7
-        BOTTOMMARGIN, 267
+        BOTTOMMARGIN, 268
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -90,31 +92,33 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,113,41,50,14,WS_GROUP
 END
 
-IDD_MICEUIKEY_DIALOG DIALOGEX 0, 0, 738, 365
+IDD_MICEUIKEY_DIALOG DIALOGEX 0, 0, 739, 401
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "MiceUiKey"
 MENU IDR_MENU1
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    PUSHBUTTON      "Start Record",IDC_START,394,344,50,14
-    PUSHBUTTON      "Stop Record",IDC_STOP,452,344,50,14
-    PUSHBUTTON      "Play",IDC_PLAY,510,344,50,14
-    EDITTEXT        IDC_LOOP_COUNT,313,341,50,17,ES_AUTOHSCROLL
-    LTEXT           "Loop Count",IDC_LOOP_TEXT,259,343,49,8
-    LTEXT           "",IDC_STATUS,7,345,249,13,0,WS_EX_STATICEDGE
-    CONTROL         "",IDC_CHARTCTRL,"ChartCtrl",WS_CLIPCHILDREN | WS_TABSTOP,7,7,720,306
-    PUSHBUTTON      "Open",IDC_OPEN,566,344,50,14
-    LTEXT           "0",IDC_TIME1,9,319,53,13,0,WS_EX_STATICEDGE
-    LTEXT           "us",IDC_STATIC,66,322,18,8
-    LTEXT           "0",IDC_TIME2,86,320,53,13,0,WS_EX_STATICEDGE
-    LTEXT           "us",IDC_STATIC,143,323,18,8
-    PUSHBUTTON      "Save",IDC_SAVE,674,344,50,14
-    LTEXT           "",IDC_FILE_NAME,159,322,342,13,0,WS_EX_STATICEDGE
-    PUSHBUTTON      "Settings",IDC_SETTING,620,344,50,14
-    LTEXT           "0",IDC_MAX_POINTS,507,321,78,13,0,WS_EX_STATICEDGE
-    EDITTEXT        IDC_POINT_NUM,592,321,50,14,ES_AUTOHSCROLL | ES_NUMBER
-    PUSHBUTTON      "Goto",IDC_GOTO,649,321,50,14
+    PUSHBUTTON      "Start Record",IDC_START,367,380,50,14
+    PUSHBUTTON      "Stop Record",IDC_STOP,425,380,50,14
+    PUSHBUTTON      "Play",IDC_PLAY,483,380,50,14
+    EDITTEXT        IDC_LOOP_COUNT,313,377,50,17,ES_AUTOHSCROLL
+    LTEXT           "Loop Count",IDC_LOOP_TEXT,259,380,49,8
+    LTEXT           "",IDC_STATUS,7,381,249,13,0,WS_EX_STATICEDGE
+    CONTROL         "",IDC_CHARTCTRL,"ChartCtrl",WS_CLIPCHILDREN | WS_TABSTOP,7,7,720,343
+    PUSHBUTTON      "Open",IDC_OPEN,539,380,50,14
+    LTEXT           "0",IDC_TIME1,9,356,53,13,0,WS_EX_STATICEDGE
+    LTEXT           "ms",IDC_STATIC,66,359,18,8
+    LTEXT           "0",IDC_TIME2,86,357,53,13,0,WS_EX_STATICEDGE
+    LTEXT           "ms",IDC_STATIC,143,360,18,8
+    PUSHBUTTON      "Save",IDC_SAVE,648,380,50,14
+    LTEXT           "",IDC_FILE_NAME,159,359,320,13,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Settings",IDC_SETTING,593,380,50,14
+    LTEXT           "0",IDC_MAX_POINTS,489,358,78,13,0,WS_EX_STATICEDGE
+    EDITTEXT        IDC_POINT_NUM,574,358,50,14,ES_AUTOHSCROLL | ES_NUMBER
+    PUSHBUTTON      "Goto",IDC_GOTO,631,358,50,14
+    PUSHBUTTON      "+",IDC_ADD,700,351,25,14
+    PUSHBUTTON      "-",IDC_SUB,700,366,25,14
 END
 
 
@@ -137,9 +141,9 @@ BEGIN
     IDD_MICEUIKEY_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 724
+        RIGHTMARGIN, 725
         TOPMARGIN, 7
-        BOTTOMMARGIN, 358
+        BOTTOMMARGIN, 394
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -199,8 +203,8 @@ IDR_MAINFRAME           ICON                    "res\\MiceUiKey.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,1,0,1
+ PRODUCTVERSION 1,1,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -217,12 +221,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Avision"
             VALUE "FileDescription", "Event Recoder"
-            VALUE "FileVersion", "1.0.0.1"
+            VALUE "FileVersion", "1.1.0.1"
             VALUE "InternalName", "MiceUiKey.exe"
             VALUE "LegalCopyright", "<Avision>.  All rights reserved."
             VALUE "OriginalFilename", "MiceUiKey.exe"
             VALUE "ProductName", "MiceUiKey"
-            VALUE "ProductVersion", "1.0.0.2"
+            VALUE "ProductVersion", "1.1.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -264,6 +268,32 @@ BEGIN
         MENUITEM "17",                          ID_LINE_17
         MENUITEM "18",                          ID_LINE_18
         MENUITEM "19",                          ID_LINE_19
+    END
+    POPUP "Line(20-29)"
+    BEGIN
+        MENUITEM "20",                          ID_LINE20
+        MENUITEM "21",                          ID_LINE21
+        MENUITEM "22",                          ID_LINE22
+        MENUITEM "23",                          ID_LINE23
+        MENUITEM "24",                          ID_LINE24
+        MENUITEM "25",                          ID_LINE25
+        MENUITEM "26",                          ID_LINE26
+        MENUITEM "27",                          ID_LINE27
+        MENUITEM "28",                          ID_LINE28
+        MENUITEM "29",                          ID_LINE29
+    END
+    POPUP "Line(30-39)"
+    BEGIN
+        MENUITEM "30",                          ID_LINE30
+        MENUITEM "31",                          ID_LINE31
+        MENUITEM "32",                          ID_LINE32
+        MENUITEM "33",                          ID_LINE33
+        MENUITEM "34",                          ID_LINE34
+        MENUITEM "35",                          ID_LINE35
+        MENUITEM "36",                          ID_LINE36
+        MENUITEM "37",                          ID_LINE37
+        MENUITEM "38",                          ID_LINE38
+        MENUITEM "39",                          ID_LINE39
     END
 END
 
